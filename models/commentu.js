@@ -5,8 +5,7 @@ const commentuSchema = new mongoose.Schema({
   // User's name
   text: { type: String, required: true }, // Comment content
   movieid: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "movie",
+    type: String,
     required: true,
   },
 

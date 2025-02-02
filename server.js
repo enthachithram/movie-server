@@ -73,9 +73,7 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  Blog.find().then((result) => {
-    res.render("blogs", { blogs: result });
-  });
+  res.json("connected");
 });
 
 //--------------forms--------------//
@@ -150,12 +148,12 @@ app.get("/movies", (req, res) => {
 
 app.get("/movies/:id", async (req, res) => {
   try {
-    const movie = await Movie.findById(req.params.id);
+    // const movie = await Movie.findById(req.params.id);
     const comments = await Commentu.find({ movieid: req.params.id })
       .populate("userid", "username")
       .lean()
       .exec();
-    res.json({ movie, comments });
+    res.json(comments);
   } catch (error) {
     res.status(400).json({ error });
     console.log(error);
@@ -224,14 +222,12 @@ app.delete("/commentu/:id", async (req, res) => {
 });
 
 app.post("/newmovie", async (req, res) => {
-  const { name, year } = req.body;
-
-  if (!name || !year) {
-    return res.status(400).json({ error: "Name and year are required" });
-  }
+  const { name, imdb } = req.body;
+  const year = 2024;
+  let telname = (vposter = hposter = "");
 
   try {
-    const movie = new Movie({ name, year });
+    const movie = new Movie({ name, year, telname, vposter, hposter, imdb });
     await movie.save();
     res.status(201).json({ message: "Movie created successfully!" });
   } catch (error) {
