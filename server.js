@@ -193,9 +193,20 @@ app.post("/newcommentu", async (req, res) => {
 
 app.delete("/commentu/:id", async (req, res) => {
   try {
+    const userid = req.user._id;
+
     const id = req.params.id;
 
     const comment = await Commentu.findById(id);
+    console.log(comment.userid, userid);
+    if (!comment) {
+      return res.json({ error: "This comment doesn't exist" });
+    }
+
+    if (comment.userid.toString() !== userid.toString()) {
+      return res.json({ error: "Nice try lil bro" });
+    }
+
     const children = await Commentu.find({ parentid: id });
 
     if (children.length > 0) {
