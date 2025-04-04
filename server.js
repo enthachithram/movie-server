@@ -6,6 +6,7 @@ require("dotenv").config();
 const app = express();
 const mongoose = require("mongoose");
 const Commentu = require("./models/commentu");
+const Like = require("./models/likes");
 const Movie = require("./models/movie");
 const User = require("./models/user");
 const List = require("./models/list");
@@ -146,18 +147,70 @@ app.get("/movies", (req, res) => {
   }
 });
 
+// Like.deleteMany({}).then((data) => {
+//   console.log(data);
+// });
+
+// Commentu.deleteMany({
+//   _id: {
+//     $in: [
+//       "67a4fa7f8aae2afd2630b0c3",
+//       "67b75fa15ae74a594a6d80a0",
+//       "67b75fae5ae74a594a6d80aa",
+//       "67b762915ae74a594a6d80bf",
+//     ],
+//   },
+// }).then((dat) => {
+//   console.log(dat);
+// });
+
 app.get("/movies/:id", async (req, res) => {
   try {
+    const { authorization } = req.headers;
+    if (authorization) {
+      await requireAuth(req, res, () => {});
+    }
+
     // const movie = await Movie.findById(req.params.id);
     const comments = await Commentu.find({ movieid: req.params.id })
       .populate("userid", "username")
       .lean()
       .exec();
-    res.json(comments);
+
+    if (!req.user) {
+      res.json(comments);
+    } else {
+      const newcomments = Promise.all(
+        comments.map(async (com) => {
+          const liked = await Like.findOne({
+            userid: req.user._id,
+            commentid: com._id,
+          });
+          return { ...com, liked: liked ? true : false };
+        })
+      );
+      newcomments.then((newcomments) => {
+        res.json(newcomments);
+      });
+    }
   } catch (error) {
     res.status(400).json({ error });
     console.log(error);
   }
+});
+
+app.get("/allcomments", async (req, res) => {
+  try {
+    const comments = await Commentu.find().sort({ createdAt: -1 });
+    res.json(comments);
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+});
+
+app.get("/likes", async (req, res) => {
+  const likes = await Like.find();
+  res.json(likes);
 });
 
 ////////////spam///////////////////
@@ -198,7 +251,7 @@ app.delete("/commentu/:id", async (req, res) => {
     const id = req.params.id;
 
     const comment = await Commentu.findById(id);
-    console.log(comment.userid, userid);
+
     if (!comment) {
       return res.json({ error: "This comment doesn't exist" });
     }
@@ -216,10 +269,11 @@ app.delete("/commentu/:id", async (req, res) => {
       res.status(200).json(id);
     } else {
       const deletedcomment = await Commentu.findByIdAndDelete(id);
-      console.log(deletedcomment._id);
 
       if (deletedcomment) {
         res.status(200).json(id);
+        Like.deleteMany({ commentid: deletedcomment._id });
+        console.log(deletedcomment._id);
       } else {
         res.status(404).json({ error: "Item with id  not found" });
       }
@@ -231,6 +285,53 @@ app.delete("/commentu/:id", async (req, res) => {
     });
   }
 });
+
+////////////   LIKES  /////////////////
+
+app.post("/like", async (req, res) => {
+  const { commentid } = req.body;
+  const userid = req.user._id;
+
+  try {
+    const exists = await Like.findOne({ userid: userid, commentid: commentid });
+
+    if (!exists) {
+      const like = new Like({ userid, commentid });
+      const comment = await Commentu.findById(commentid);
+      if (!comment) {
+        throw new Error("comment doesnt exist");
+      }
+      comment.likes += 1;
+      await comment.save();
+      // const del = await Like.findByIdAndDelete("67e9af2b8e6a3c34f4122ee2");
+      await like.save();
+      res.json("created like");
+    } else {
+      res.json("already liked");
+    }
+  } catch (error) {
+    res.status(404).json({ error: error });
+  }
+});
+
+app.delete("/like/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const del = await Like.findOneAndDelete({ commentid: id });
+    const comment = await Commentu.findById(id);
+    comment.likes -= 1;
+    await comment.save();
+
+    if (!del) {
+      res.status(404).json("doesnt even exist");
+    }
+    res.json({ msg: "deleted", id: del._id });
+  } catch (error) {
+    res.json({ error: error });
+  }
+});
+
+/////////-----//////////
 
 app.post("/newmovie", async (req, res) => {
   const { name, imdb } = req.body;
@@ -246,8 +347,6 @@ app.post("/newmovie", async (req, res) => {
     res.status(500).json({ error: "Failed to save movie" });
   }
 });
-
-/////////-----//////////
 
 app.post("/newlist", async (req, res) => {
   const { name, number } = req.body;

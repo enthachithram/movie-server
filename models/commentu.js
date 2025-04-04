@@ -14,6 +14,12 @@ const commentuSchema = new mongoose.Schema({
     ref: "Commentu",
     default: null,
   },
+
+  likes: {
+    type: Number,
+    default: 0,
+  },
+
   createdAt: { type: Date, default: Date.now }, // Timestamp}  // Reference to parent comment (null for top-level comments)
 });
 
