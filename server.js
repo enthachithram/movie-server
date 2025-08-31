@@ -77,6 +77,7 @@ app.post("/login", async (req, res) => {
 app.get("/ping", async (req, res) => {
   await fetch("https://aiaiai-zfg6.onrender.com/alive");
   res.send("pinged");
+  console.log("pinged");
 });
 
 app.get("/", async (req, res) => {
