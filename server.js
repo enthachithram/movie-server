@@ -74,6 +74,11 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.get("/ping", async (req, res) => {
+  await fetch("https://aiaiai-zfg6.onrender.com/alive");
+  res.send("pinged");
+});
+
 app.get("/", async (req, res) => {
   res.json("connected");
   const date = new Date().toISOString();
@@ -88,6 +93,11 @@ app.get("/", async (req, res) => {
   } catch (error) {
     console.log("log error");
   }
+});
+
+app.get("/logs", async (req, res) => {
+  const logs = await Log.find();
+  res.json(logs);
 });
 
 //--------------forms--------------//
