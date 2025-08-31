@@ -10,6 +10,7 @@ const Like = require("./models/likes");
 const Movie = require("./models/movie");
 const User = require("./models/user");
 const List = require("./models/list");
+const Log = require("./models/log");
 
 const cors = require("cors");
 app.use(cors({ origin: "*" }));
@@ -73,8 +74,20 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
   res.json("connected");
+  const date = new Date().toISOString();
+  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  const userinfo = req.get("User-Agent");
+
+  const newlog = new Log({ date, ip, userinfo });
+
+  try {
+    const logged = await newlog.save();
+    console.log(logged);
+  } catch (error) {
+    console.log("log error");
+  }
 });
 
 //--------------forms--------------//
@@ -146,6 +159,10 @@ app.get("/movies", (req, res) => {
     res.status(400).json("server error:: ");
   }
 });
+
+// Commentu.updateMany({}, { $set: { likes: 0 } }).then((d) => {
+//   console.log(d);
+// });
 
 // Like.deleteMany({}).then((data) => {
 //   console.log(data);
