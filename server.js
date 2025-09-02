@@ -75,9 +75,15 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/ping", async (req, res) => {
-  await fetch("https://aiaiai-zfg6.onrender.com/alive");
-  res.send("pinged");
-  console.log("pinged");
+  console.log("got");
+  try {
+    await fetch("https://pinger-yf88.onrender.com/alive");
+    res.json({ message: "pinged" });
+  } catch (error) {
+    console.log(error);
+  }
+
+  console.log("pingedfd");
 });
 
 app.get("/", async (req, res) => {
