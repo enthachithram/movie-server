@@ -247,7 +247,7 @@ app.get("/likes", async (req, res) => {
   res.json(likes);
 });
 
-////////////spam///////////////////
+////////////comment post/delete///////////////////
 
 app.use(requireAuth);
 
@@ -351,14 +351,17 @@ app.post("/like", async (req, res) => {
 app.delete("/like/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const del = await Like.findOneAndDelete({ commentid: id });
+    const userid = req.user._id;
+    const del = await Like.findOneAndDelete({ userid: userid, commentid: id });
+
+    if (!del) {
+      res.status(404).json("This user hasnt liked this comment");
+    }
+
     const comment = await Commentu.findById(id);
     comment.likes -= 1;
     await comment.save();
 
-    if (!del) {
-      res.status(404).json("doesnt even exist");
-    }
     res.json({ msg: "deleted", id: del._id });
   } catch (error) {
     res.json({ error: error });
