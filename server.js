@@ -165,18 +165,18 @@ app.get("/commentu/:id", async (req, res) => {
   console.log(all);
 });
 
-app.get("/movies", (req, res) => {
-  console.log(req);
-  console.log(req.body);
+// app.get("/movies", (req, res) => {
+//   console.log(req);
+//   console.log(req.body);
 
-  try {
-    Movie.find().then((result) => {
-      res.status(201).json(result);
-    });
-  } catch (error) {
-    res.status(400).json("server error:: ");
-  }
-});
+//   try {
+//     Movie.find().then((result) => {
+//       res.status(201).json(result);
+//     });
+//   } catch (error) {
+//     res.status(400).json("server error:: ");
+//   }
+// });
 
 // Commentu.updateMany({}, { $set: { likes: 0 } }).then((d) => {
 //   console.log(d);

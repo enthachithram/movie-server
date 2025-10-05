@@ -17,7 +17,7 @@ const requireAuth = async (req, res, next) => {
     next();
   } catch (error) {
     console.log(error);
-    res.json({ error: "auth request denied" });
+    return res.json({ error: "auth request denied" });
   }
 };
 
