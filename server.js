@@ -87,7 +87,7 @@ app.get("/ping", async (req, res) => {
 });
 
 app.get("/", async (req, res) => {
-  res.json("connected");
+  
   const date = new Date().toISOString();
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
   const userinfo = req.get("User-Agent");
@@ -100,6 +100,7 @@ app.get("/", async (req, res) => {
   } catch (error) {
     console.log("log error");
   }
+  res.json("connected");
 });
 
 app.get("/logs", async (req, res) => {
@@ -203,6 +204,9 @@ app.get("/movies/:id", async (req, res) => {
     const { authorization } = req.headers;
     if (authorization) {
       await requireAuth(req, res, () => {});
+
+      if (res.headersSent) return;
+
     }
 
     // const movie = await Movie.findById(req.params.id);
