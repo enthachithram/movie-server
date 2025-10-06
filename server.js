@@ -216,7 +216,7 @@ app.get("/movies/:id", async (req, res) => {
       .exec();
 
     if (!req.user) {
-      res.json(comments);
+      return res.json(comments);
     } else {
       const newcomments = Promise.all(
         comments.map(async (com) => {
