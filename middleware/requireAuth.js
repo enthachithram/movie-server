@@ -5,7 +5,7 @@ const requireAuth = async (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization) {
-    return res.json({ error: "no authorization token " });
+    res.json({ error: "no authorization token " });
   }
 
   const token = authorization.split(" ")[1];
